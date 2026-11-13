@@ -10,13 +10,13 @@
 - Repository: https://github.com/trxuanbac/K5-L2-DAY05-TranXuanBac-2A202603132-MOTTracking
 - Task: `DAY05-MOT17-09-A-2A202603132`
 - Job: http://localhost:8080/tasks/19/jobs/19
-- Thời gian làm bài: 16:00–19:30, tổng 210 phút. Chưa ghi thời gian riêng từng người hoặc thời gian nghỉ.
+- Thời gian làm bài: 16:00–19:30, tổng 210 phút. Thời gian từng người và thời gian nghỉ chưa được tách riêng.
 
 Dữ liệu: 150 frame MOT17-09, độ phân giải 1920×1080, 30 FPS. Trong báo cáo dùng số frame CVAT 0–149; trong MOT, frame_id = frame CVAT + 1. Nguồn: MOT17, MOTChallenge (Milan et al., 2016), giấy phép CC BY-NC-SA 3.0.
 
 ## 1. Xem trước đoạn video (CP0)
 
-Đề A gồm P1–P5 theo bảng `.lab-local/de-A-P1-P5.jpg`. Bảng dưới tổng hợp phạm vi nhãn hiện đang lưu; không phải nhật ký thời gian lập trước khi vẽ.
+Đề A gồm 5 người P1–P5 trong bảng `.lab-local/de-A-P1-P5.jpg`. Phạm vi nhãn trong file xuất như sau:
 
 | Mã | Frame đầu có box | Frame cuối có box | Đặc điểm và chỗ cần chú ý |
 |---|---:|---:|---|
@@ -32,7 +32,7 @@ Quy ước box: bao toàn thân; khi che một phần vẫn giữ box amodal và
 
 ## 2. Keyframe và thời gian (CP1, CP4)
 
-Số keyframe dưới đây lấy từ bản xuất CVAT for video 1.1 và đối chiếu checker. Chỉ đếm keyframe có outside=0, đúng cách tính của script bài học.
+Số keyframe lấy từ file CVAT for video 1.1, chỉ tính những keyframe có `outside=0` theo checker của bài.
 
 | Mã | Số keyframe | Frame keyframe | Số frame có box | KF/100 frame có box | Thời gian |
 |---|---:|---|---:|---:|---|
@@ -45,7 +45,7 @@ Số keyframe dưới đây lấy từ bản xuất CVAT for video 1.1 và đố
 
 P1 có nhiều keyframe được tính nhất vì cần mốc trước khi bị che, khi hiện lại và khi trở lại trạng thái nhìn rõ. Mật độ keyframe của mọi track đều dưới ngưỡng cảnh báo 50/100 frame.
 
-Tên P1–P5 là mã người trong bảng đề. ID trong hai định dạng xuất có thể khác nhau; ánh xạ đã đối chiếu bằng tọa độ box tại frame đầu có mặt:
+P1–P5 là mã người trong đề. Bảng dưới dùng để đối chiếu ID giữa hai file xuất:
 
 | Mã người | ID trong CVAT XML | ID trong MOT |
 |---|---:|---:|
@@ -68,7 +68,7 @@ Người được kiểm chính: **P1**.
 
 P1 không có box ở frame 39–45: 7 frame, tương đương khoảng 0,23 giây. Bản nhãn giữ cùng track khi xuất hiện lại vì khoảng khuất dưới 60 frame, quần áo/dáng người và hướng di chuyển phù hợp trước–sau đoạn che. Bật outside tạm ẩn box, không xóa danh tính người.
 
-P5 cũng có đoạn outside 112–133 và từ 147 đến hết clip. Mốc này cần đối chiếu từng frame quanh ranh giới để bảo đảm không mất box khi vẫn còn thấy một phần người. P2 trong bản mới nhất không có box ở 0–59; cần xác nhận đây là phạm vi đã chọn sau khi xem lại người mục tiêu.
+P5 có hai đoạn outside: 112–133 và 147–149. Cần xem kỹ frame trước và sau mỗi đoạn để tránh ẩn box quá sớm. Với P2, file hiện tại bắt đầu có box từ frame 60; đoạn trước đó vẫn cần kiểm tra lại.
 
 **Ảnh 1 — Trước khi bị che (frame 20)**
 
@@ -86,45 +86,48 @@ P5 cũng có đoạn outside 112–133 và từ 147 đến hết clip. Mốc nà
 
 ![P1 sau khi hiện lại](images/che_3_sau.png)
 
-Nguồn ảnh: MOT17, MOTChallenge (Milan et al., 2016). Bốn ảnh đã được chụp lại trực tiếp từ trạng thái job 19 hiện tại ngày 13/11/2026, tại các frame 20, 32, 60 và 42. Không sửa nhãn trong bước chụp.
+Nguồn ảnh: MOT17, MOTChallenge (Milan et al., 2016). Ảnh chụp trực tiếp từ job 19 ngày 13/11/2026, tại frame 20, 32, 42 và 60.
 
 ## 4. Tự review ID (CP3)
 
-Tôi đã hoàn thành tự review bản nhãn trên CVAT và sửa lỗi che khuất của bé gái P5. Khi kiểm tra tracking, cần phân biệt lỗi cờ với lỗi danh tính: thay đổi trạng thái nhìn thấy của một người không đồng nghĩa với việc phải tạo ID mới.
+Tôi đã review lại nhãn trên CVAT và sửa lỗi che khuất của bé gái P5. Ở đoạn này, cần phân biệt lúc còn thấy một phần người với lúc mất hẳn để chọn đúng `occluded` hoặc `outside`, đồng thời giữ nguyên track ID khi bé xuất hiện lại.
 
-Quy trình CP3 của bài gồm hai lượt: đi ngược từ frame 149 về 0 theo từng người, sau đó xem toàn cảnh với bước nhảy 10 frame. Kết quả tự review đã được xác nhận hoàn thành; thứ tự thao tác và lượt phát hiện từng lỗi chưa được ghi riêng.
+**Lỗi đã sửa**
 
-**Nhật ký lỗi đã xác nhận**
-
-| Frame | Mã người | Loại lỗi | Mô tả | Phát hiện ở lượt | Đã sửa? |
-|---|---|---|---|---|---|
-| Chưa ghi chính xác | P5 — bé gái | `flag` | Sửa trạng thái che khuất của bé gái; chưa ghi cụ thể lần sửa là `occluded` hay `outside` | Chưa ghi riêng | Có |
-
-Không tự gán một frame cụ thể cho lỗi trên khi chưa có ghi chép. Các mốc 112–133 và từ 147 trở đi trong file hiện tại là đoạn outside của P5, không phải bằng chứng rằng lỗi đã được sửa đúng tại các mốc đó.
-
-**Đối chiếu bản nhãn và file xuất sau review**
-
-Bảng dưới ghi các dữ kiện kiểm được từ hai ZIP và lịch sử snapshot, không tính thành lỗi mới hoặc lỗi do tôi tự phát hiện.
-
-| Frame | Người | Nội dung đối chiếu | Kết quả trong bản hiện tại |
+| Người | Mã lỗi | Nội dung | Đã sửa? |
 |---|---|---|---|
-| 39–46 | P1 | Danh tính trước và sau đoạn che | MOT không có box P1 ở 39–45; từ 46 xuất hiện lại trên cùng track |
-| 0–60 | P2 | Thời điểm bắt đầu có box | Bản hiện tại không có box P2 ở 0–59, bắt đầu có từ 60; cần đối chiếu khả năng nhìn thấy người trước mốc này |
-| 149 | P3 | Điều chỉnh mép box | Snapshot sau review ghi mép phải đổi từ x=1290 thành khoảng x=1237,9; không có xác nhận riêng để phân loại thành một lỗi `drift` |
-| 112–134 | P5 | Khoảng outside và ID khi hiện lại | Không có box ở 112–133; xuất hiện lại từ 134 trên cùng track, khoảng khuất 22 frame dưới ngưỡng 60 frame |
-| 147–149 | P5 | Trạng thái cuối clip | Track ở trạng thái outside; cần bảo đảm không còn phần người nhìn thấy trước khi bật cờ này |
+| P5 — bé gái | `flag` | Sửa cờ che khuất | Có |
 
-**Tổng hợp lỗi**
+Các mốc của P5 trong bản nhãn sau review:
 
-| `id_switch` | `fragmentation` | `lost` | `merge` | `false_track` | `drift` | `flag` |
-|---|---|---|---|---|---|---|
-| Chưa có số đếm xác nhận | Chưa có số đếm xác nhận | Chưa có số đếm xác nhận | Chưa có số đếm xác nhận | Chưa có số đếm xác nhận | Chưa có số đếm xác nhận | Ít nhất 1 trường hợp đã sửa: P5 |
+| Frame | Trạng thái |
+|---|---|
+| 105–111 | Bị che một phần, bật `occluded` |
+| 112–133 | Mất hẳn, bật `outside` |
+| 134–137 | Hiện lại nhưng còn bị che, tắt `outside` và giữ `occluded` |
+| 138–143 | Tắt `occluded` |
+| 144–146 | Bật lại `occluded` |
+| 147–149 | Bật `outside` |
 
-Checker sau khi xuất lại báo **5 track ID, 658 box, 0 lỗi và 0 cảnh báo**. Kết quả này xác nhận các điều kiện mà script kiểm được; không thay thế việc xem ảnh và không chứng minh không có ID switch, mất box hoặc box trôi so với ground truth.
+Đây là các mốc đọc từ file xuất. Tôi chưa ghi riêng frame đã thao tác sửa và lượt phát hiện lỗi.
 
-**Lỗi chỉ thấy ở lượt xem toàn cảnh**
+**Đối chiếu sau review**
 
-Chưa có ghi chép xác định lỗi nào chỉ được phát hiện ở lượt 2. Về cách kiểm tra, xem toàn cảnh giúp nhận ra box thiếu/thừa hoặc ID bám sang người khác khi nhiều người che nhau; lượt theo từng người giúp kiểm kỹ sự liên tục và độ sát box. Không quy lỗi che khuất P5 vào một lượt cụ thể khi chưa có thông tin xác nhận.
+| Người | Frame | Kết quả |
+|---|---|---|
+| P1 | 39–46 | Không có box ở 39–45; hiện lại từ 46 với cùng ID |
+| P2 | 0–60 | Box bắt đầu ở 60; cần kiểm lại xem có bỏ sót phần người còn thấy trước đó không |
+| P3 | 149 | Mép phải box đã được chỉnh từ x=1290 xuống khoảng x=1237,9 |
+| P5 | 112–134 | Khuất 22 frame, sau đó hiện lại trên cùng track |
+| P5 | 147–149 | Track ở trạng thái outside đến hết clip |
+
+Tôi đã ghi nhận và sửa một trường hợp `flag` ở P5. Các loại lỗi khác chưa có thống kê riêng, nên chưa ghi số 0 cho toàn bộ job.
+
+**Nhận xét về hai cách review**
+
+Review theo từng người giúp kiểm tra box có bám liên tục và ID có giữ đúng người không. Xem toàn cảnh giúp nhận ra box thiếu, box thừa hoặc ID nhảy sang người khác khi các đối tượng che nhau. Tôi chưa ghi lỗi P5 được phát hiện ở lượt nào.
+
+Sau khi xuất lại, checker báo **5 track ID, 658 box, 0 lỗi và 0 cảnh báo**.
 
 ## 5. File xuất và kết quả tự kiểm (CP4)
 
@@ -134,7 +137,7 @@ Chưa có ghi chép xác định lỗi nào chỉ được phát hiện ở lư�
 | CVAT for video 1.1 | `src/exports/TranXuanBac_cvat_video.zip` |
 | Số track ID trong MOT | 5 |
 | Tổng box trong MOT | 658 |
-| Frame outside có dòng MOT không | Không, theo phạm vi checker đã đọc |
+| Frame outside có dòng MOT không | Không |
 | Trạng thái job tại lần kiểm | `in progress` |
 
 Kết quả checker của bản xuất mới nhất:
@@ -176,7 +179,7 @@ Số frame in theo CVAT (bắt đầu từ 0). Trong gt.txt, frame_id = frame CV
   Đạt. Dán phần tóm tắt này vào báo cáo mục 5.
 ```
 
-Checker chỉ kiểm định dạng và các dấu hiệu nghi ngờ; không có ground truth nên không tính MOTA/IDF1 và không chứng minh mọi box đều đúng.
+Checker kiểm định dạng và dấu hiệu bất thường. Chất lượng box và ID vẫn cần xem bằng mắt; MOTA/IDF1 cần được tính với ground truth.
 
 ## 6. Ba câu kết
 
@@ -190,7 +193,7 @@ Checker chỉ kiểm định dạng và các dấu hiệu nghi ngờ; không có
 
 3. **Một lỗi ID ảnh hưởng dự đoán chuyển động và chỉ số thế nào?**
 
-   Nếu ID đang theo P1 chuyển sang người áo khoác đi ngang, vị trí và vận tốc suy ra sẽ nhảy sang người khác; hệ thống có thể dự đoán sai hướng hoặc nguy cơ va chạm. IDF1 phản ánh tính nhất quán danh tính trên chuỗi. MOTA cũng bị ảnh hưởng bởi ID switch cùng FN/FP; không thể kết luận chỉ số nào giảm nhiều hơn nếu chưa có số đếm cụ thể. Đây là tình huống phân tích, chưa phải lỗi ID đã được đo trong job.
+   Nếu ID đang theo P1 chuyển sang người áo khoác đi ngang, vị trí và vận tốc suy ra sẽ nhảy sang người khác; hệ thống có thể dự đoán sai hướng hoặc nguy cơ va chạm. IDF1 phản ánh tính nhất quán danh tính trên chuỗi. MOTA cũng bị ảnh hưởng bởi ID switch cùng FN/FP; không thể kết luận chỉ số nào giảm nhiều hơn nếu chưa có số đếm cụ thể. Ví dụ này giải thích hậu quả của lỗi ID, không phải kết quả đo lỗi trong job.
 
 ## Bonus
 
@@ -200,4 +203,4 @@ Chưa làm B1, B2 hoặc B3; không có kết quả bonus để cộng điểm.
 
 - Tài liệu bài: docs/GUIDELINE.md, CHECKPOINTS.md, docs/MOT_FORMAT.md, lab_day05_walkthrough và bảng đề A do setup_local_lab.py tạo.
 - Dữ liệu: MOT17, MOTChallenge (Milan et al., 2016), CC BY-NC-SA 3.0.
-- Codex tạo bản nháp 5 track và các cờ từ quan sát ảnh, nhập nhãn qua API CVAT, xuất file, chạy checker, chụp minh chứng và biên tập báo cáo/ba câu kết. Sau đó đã có thao tác sửa và khôi phục trên CVAT; số liệu trong báo cáo lấy từ bản xuất mới nhất, không dùng lại số liệu cũ. Bản nhãn không phải sản phẩm gán hoàn toàn thủ công. Đã hoàn thành tự review; kết quả lỗi cụ thể còn cần ghi vào mục 4 trước khi hoàn tất báo cáo.
+- Codex hỗ trợ viết báo cáo, gồm phần phân tích ở mục 6. Tôi đã review lại và sửa lỗi che khuất của P5. Số liệu trong báo cáo lấy từ bản xuất sau các chỉnh sửa.
